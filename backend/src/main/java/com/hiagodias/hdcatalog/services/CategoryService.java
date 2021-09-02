@@ -7,12 +7,15 @@ import java.util.stream.Collectors;
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hiagodias.hdcatalog.dto.CategoryDTO;
 import com.hiagodias.hdcatalog.entities.Category;
 import com.hiagodias.hdcatalog.repositories.CategoryRepository;
+import com.hiagodias.hdcatalog.services.exceptions.DatabaseException;
 import com.hiagodias.hdcatalog.services.exceptions.ResourceNotFoundException;
 
 @Service
@@ -59,6 +62,19 @@ public class CategoryService {
 			
 		}
 		
+	}
+
+	public void delete(Long id) {
+		try {
+		repository.deleteById(id);
+		}
+		catch (EmptyResultDataAccessException e) {
+			throw new ResourceNotFoundException("id not found");
+		}
+		catch (DataIntegrityViolationException e) {
+			throw new DatabaseException("Integrity violation");
+			
+		}
 	}
 
 }

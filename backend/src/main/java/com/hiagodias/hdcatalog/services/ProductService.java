@@ -1,7 +1,6 @@
 package com.hiagodias.hdcatalog.services;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.persistence.EntityNotFoundException;
 
@@ -13,14 +12,21 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hiagodias.hdcatalog.dto.CategoryDTO;
 import com.hiagodias.hdcatalog.dto.ProductDTO;
+import com.hiagodias.hdcatalog.entities.Category;
 import com.hiagodias.hdcatalog.entities.Product;
+import com.hiagodias.hdcatalog.repositories.CategoryRepository;
 import com.hiagodias.hdcatalog.repositories.ProductRepository;
 import com.hiagodias.hdcatalog.services.exceptions.DatabaseException;
 import com.hiagodias.hdcatalog.services.exceptions.ResourceNotFoundException;
 
 @Service
 public class ProductService {
+	
+	@Autowired
+	private CategoryRepository categoryRepository;
+	
 	
 	@Autowired
 	private ProductRepository repository;
@@ -44,16 +50,17 @@ public class ProductService {
 	@Transactional
 	public ProductDTO insert(ProductDTO dto) {
 		Product entity = new Product();
-		//entity.setName(dto.getName());
+		copyDtoToEntity(dto, entity);
 		entity = repository.save(entity);
 		return new ProductDTO(entity);
 	}
+	
 	
 	@Transactional
 	public ProductDTO update(Long id, ProductDTO dto) {
 		try {
 		Product entity = repository.getOne(id);
-		//entity.setName(dto.getName());
+		copyDtoToEntity(dto, entity);
 		entity = repository.save(entity);
 		return new ProductDTO(entity);
 	}
@@ -76,5 +83,32 @@ public class ProductService {
 			
 		}
 	}
+	
+	
+	private void copyDtoToEntity(ProductDTO dto, Product entity) {
+			
+		entity.setName(dto.getName());
+		entity.setDescription(dto.getDescription());
+		entity.setDate(dto.getDate());
+		entity.setimgUrl(dto.getImgUrl());
+		entity.setPrice(dto.getPrice());
+		
+		entity.getCategories().clear();
+		for (CategoryDTO catDto: dto.getCategories()) {
+			Category category = categoryRepository.getOne(catDto.getId());
+			entity.getCategories().add(category);
+		}
+		
+	}
+
 
 }
+
+
+
+
+
+
+
+
+
